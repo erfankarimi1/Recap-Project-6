@@ -1,7 +1,9 @@
 import useSWR from "swr";
-import { Navigate, Route, Routes } from "react-router";
+import { Route, Routes } from "react-router";
 
 import ArtPieces from "./components/ArtPieces";
+import Navigation from "./components/Navigation";
+import Spotlight from "./components/Spotlight";
 import { ART_API_URL, fetcher } from "./fetcher";
 import "./styles.css";
 
@@ -12,12 +14,15 @@ export default function App() {
   if (error || !pieces) return <main>Failed to load art pieces.</main>;
 
   return (
-    <main>
-      <Routes>
-        {/* Temporary until the Spotlight page (issue 5) takes over "/" */}
-        <Route path="/" element={<Navigate to="/art-pieces" replace />} />
-        <Route path="/art-pieces" element={<ArtPieces pieces={pieces} />} />
-      </Routes>
-    </main>
+    <>
+      <main>
+        <Routes>
+          <Route path="/" element={<Spotlight pieces={pieces} />} />
+          <Route path="/art-pieces" element={<ArtPieces pieces={pieces} />} />
+          <Route path="*" element={<p>Page not found</p>} />
+        </Routes>
+      </main>
+      <Navigation />
+    </>
   );
 }

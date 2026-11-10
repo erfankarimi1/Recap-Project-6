@@ -55,3 +55,41 @@ test("shows an error state when the request fails", async () => {
     await screen.findByText("Failed to load art pieces.")
   ).toBeInTheDocument();
 });
+
+test("shows the spotlight on the route /", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  vi.spyOn(Math, "random").mockReturnValue(0);
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+
+  expect(await screen.findByText("Artist A")).toBeInTheDocument();
+  expect(screen.getByRole("img", { name: "Piece A" })).toBeInTheDocument();
+  expect(screen.queryByText("Artist B")).not.toBeInTheDocument();
+  vi.restoreAllMocks();
+});
+
+test("shows the navigation and a message for unknown URLs", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/nowhere"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+
+  expect(await screen.findByText("Page not found")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Spotlight" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Gallery" })).toBeInTheDocument();
+});
