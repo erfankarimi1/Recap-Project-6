@@ -1,0 +1,37 @@
+import { render, screen } from "@testing-library/react";
+
+import Spotlight from "./Spotlight";
+
+const pieces = [
+  { slug: "a", artist: "Artist A", name: "Piece A", imageSource: "a.jpg" },
+  { slug: "b", artist: "Artist B", name: "Piece B", imageSource: "b.jpg" },
+];
+
+afterEach(() => vi.restoreAllMocks());
+
+test("shows the image and artist of the randomly selected art piece", () => {
+  vi.spyOn(Math, "random").mockReturnValue(0.99);
+  render(<Spotlight pieces={pieces} />);
+
+  expect(screen.getByRole("img", { name: "Piece B" })).toHaveAttribute(
+    "src",
+    "b.jpg"
+  );
+  expect(screen.getByText("Artist B")).toBeInTheDocument();
+});
+
+test("keeps the same art piece when it re-renders", () => {
+  const random = vi.spyOn(Math, "random").mockReturnValue(0);
+  const { rerender } = render(<Spotlight pieces={pieces} />);
+  random.mockReturnValue(0.99);
+  rerender(<Spotlight pieces={pieces} />);
+
+  expect(screen.getByText("Artist A")).toBeInTheDocument();
+  expect(screen.queryByText("Artist B")).not.toBeInTheDocument();
+});
+
+test("shows a message without art pieces", () => {
+  render(<Spotlight pieces={[]} />);
+
+  expect(screen.getByText("No art pieces to show.")).toBeInTheDocument();
+});
