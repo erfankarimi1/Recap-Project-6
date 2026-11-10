@@ -14,5 +14,16 @@ export default defineConfig({
     setupFiles: "./src/setupTests.ts",
     // the starter has no tests yet
     passWithNoTests: true,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.{test,spec}.{ts,tsx}",
+        "src/setupTests.ts",
+        "src/vite-env.d.ts",
+        "src/index.tsx",
+      ],
+    },
   },
 });
