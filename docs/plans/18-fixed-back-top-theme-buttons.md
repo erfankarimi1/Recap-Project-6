@@ -44,11 +44,13 @@ Modified:
 - `src/App.tsx`: render `BackButton`, `ThemeButton` and `ScrollToTopButton` once, outside the `Routes`, and stop passing the theme props to `Navigation`.
 - `src/App.test.tsx`: add "shows the theme, back and go-to-top buttons on every page". The existing theme tests are unchanged.
 - `src/styles.css`: a shared `.corner-button` rule (fixed, round, centered icon, color tokens only) and one rule per corner: top left, top right, and bottom right above the navigation bar (`bottom: calc(var(--nav-height) + 1rem)`). Remove the `.theme-toggle` rules, which have no user any more.
-- `src/styles.test.ts`: append "fixes the corner buttons in their corners". The existing tests stay as they are, and they must keep passing: no color is hard-coded outside the token blocks.
+- `src/components/RoomView.tsx` and `RoomView.test.tsx`: remove the room view's own "Back" link and delete its test "links back to the details page"; add "has no back link of its own". The other room tests stay as they are. See section 6.
+- `src/styles.css` also loses the `.room a` rule, which styled that link, and `main` gets more top padding so the content stays clear of the corner buttons (see section 6).
+- `src/styles.test.ts`: append "fixes the corner buttons in their corners" and "keeps the page content below the corner buttons". The existing tests stay as they are, and they must keep passing: no color is hard-coded outside the token blocks.
 
 ## 4. Out of scope
 
-- The "Back" link of the room view (story 17, PR #62): it is not on `main` yet. After both merge, the room page will have its own "Back" link and the fixed "Back" button; removing the link would be a follow-up.
+- Anything else about the room view. Its own "Back" link is removed (see section 6), but nothing else in it changes.
 - Hiding the back button on some pages (for example on the Spotlight), and a different fallback than the Gallery.
 - Respecting `prefers-reduced-motion` for the smooth scroll, and animations.
 - Tooltips on the buttons, moving the buttons, and saving anything.
@@ -63,3 +65,12 @@ Modified:
 - The three buttons are plain `button` elements, so they can be reached with the Tab key without extra code. The tests check it.
 - The positions are CSS, which jsdom cannot show. The CSS test checks that each rule fixes the button in its corner, and the real layout is a visual check.
 - Where the corner buttons cover other content (the full-screen Spotlight slideshow, long pages on small screens) can only be checked in a browser.
+
+## 6. Changes made during implementation
+
+- **The room view's own "Back" link is removed.** Story 17 (PR #62) merged while this story was being built. The room page then had two "Back" controls, the fixed button and a link, and on narrow screens the fixed button in the top left corner probably covers the link. With the owner's approval, the link, its test ("links back to the details page") and its `.room a` CSS rule were removed, and a test "has no back link of its own" was added. The fixed "Back" button replaces it: it goes to the previous page, which is the details page when the room was opened from there.
+- **The `Link` import in `ArtPieceDetails.tsx` stays.** Removing the old "Back" link left `Link` unused on the `main` this branch started from, so its import was removed. Story 17 had added a "View in room" `<Link>` to the same file, and the merged file then failed to compile. The import is back, and the check after the merge is what found it.
+- **Icons:** the first green steps used text glyphs, which were replaced by inline SVG icons in the refactor, as planned. No test changed.
+- **`BackButton` uses an `if`/`else` for `navigate`,** because `navigate(cond ? -1 : "/art-pieces")` does not type-check. Tests do not type-check, so `npm run check` found it.
+- **Order of the work:** the theme button was moved and `Navigation` changed in one step, because two theme buttons in `App` would have broken the existing `App` theme tests.
+- **The corner buttons covered the content on small screens, found in a real browser.** A check in headless Chrome showed that on a phone (390 px wide) the buttons sat on top of the first gallery card, and the theme button partly hid its favorite (heart) button. The same happened on the details page. `main` now has a top padding of `calc(4.5rem + env(safe-area-inset-top))`, with a test "keeps the page content below the corner buttons". After the fix, no overlap was found on a phone (390 x 844), a small phone (320 x 568), a tablet (820 x 1180) and a desktop (1280 x 800), on the Gallery, Favorites, Spotlight, details, room and not-found pages.
