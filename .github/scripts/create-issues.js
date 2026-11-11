@@ -23,7 +23,16 @@ export default async function createIssues({ github, context, core }) {
       return false;
     });
 
+  // Not inside the try block below: if the existing issues cannot be listed,
+  // the run must fail instead of creating duplicates.
+  const existingTitles = await getExistingTitles({ github, context });
+
   for (const { title, body } of files) {
+    if (existingTitles.has(title)) {
+      core.notice(`Issue already exists, skipped: ${title}`);
+      continue;
+    }
+
     try {
       await github.rest.issues.create({
         ...context.repo,
@@ -36,6 +45,20 @@ export default async function createIssues({ github, context, core }) {
       core.error(`Error creating issue ${title}`);
     }
   }
+}
+
+// Titles of all issues, open and closed. The issues API also returns pull
+// requests, which are not issues and are left out.
+async function getExistingTitles({ github, context }) {
+  const issues = await github.paginate(github.rest.issues.listForRepo, {
+    ...context.repo,
+    state: "all",
+    per_page: 100,
+  });
+
+  return new Set(
+    issues.filter((issue) => !issue.pull_request).map((issue) => issue.title)
+  );
 }
 
 function getTitleAndBody(content) {
