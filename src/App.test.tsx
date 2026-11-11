@@ -311,3 +311,90 @@ test("adds a comment to this art piece only", async () => {
   expect(within(otherComments).queryByText("Lovely")).not.toBeInTheDocument();
   expect(within(otherComments).queryAllByRole("listitem")).toHaveLength(0);
 });
+
+test("keeps the favorites after a reload", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  const firstVisit = render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+  await user.click(
+    await screen.findByRole("button", { name: "Favorite Piece A" })
+  );
+  firstVisit.unmount();
+
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+
+  expect(
+    await screen.findByRole("button", {
+      name: "Favorite Piece A",
+      pressed: true,
+    })
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece B", pressed: false })
+  ).toBeInTheDocument();
+});
+
+test("keeps the comments after a reload", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  const firstVisit = render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces/a"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+  await user.type(
+    await screen.findByRole("textbox", { name: "Comment" }),
+    "Lovely"
+  );
+  await user.click(screen.getByRole("button", { name: "Add comment" }));
+  firstVisit.unmount();
+
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces/a"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+
+  const comments = await screen.findByRole("region", { name: "Comments" });
+  expect(within(comments).getByText("Lovely")).toBeInTheDocument();
+});
+
+test("starts without favorites when nothing is saved", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  renderApp();
+
+  expect(
+    await screen.findByRole("button", {
+      name: "Favorite Piece A",
+      pressed: false,
+    })
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece B", pressed: false })
+  ).toBeInTheDocument();
+});

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { Route, Routes } from "react-router";
 
@@ -7,12 +7,18 @@ import ArtPieces from "./components/ArtPieces";
 import Navigation from "./components/Navigation";
 import Spotlight from "./components/Spotlight";
 import { ART_API_URL, fetcher } from "./fetcher";
+import { loadArtPiecesInfo, saveArtPiecesInfo } from "./storage";
 import type { ArtPieceInfo } from "./types";
 import "./styles.css";
 
 export default function App() {
   const { data: pieces, error, isLoading } = useSWR(ART_API_URL, fetcher);
-  const [artPiecesInfo, setArtPiecesInfo] = useState<ArtPieceInfo[]>([]);
+  const [artPiecesInfo, setArtPiecesInfo] =
+    useState<ArtPieceInfo[]>(loadArtPiecesInfo);
+
+  useEffect(() => {
+    saveArtPiecesInfo(artPiecesInfo);
+  }, [artPiecesInfo]);
 
   function isFavorite(slug: string) {
     return artPiecesInfo.some((info) => info.slug === slug && info.isFavorite);
