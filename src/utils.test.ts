@@ -1,9 +1,30 @@
 import { getRandomArtPiece } from "./utils";
 
 const pieces = [
-  { slug: "a", artist: "A", name: "A", imageSource: "a.jpg" },
-  { slug: "b", artist: "B", name: "B", imageSource: "b.jpg" },
-  { slug: "c", artist: "C", name: "C", imageSource: "c.jpg" },
+  {
+    slug: "a",
+    artist: "A",
+    name: "A",
+    imageSource: "a.jpg",
+    year: "1",
+    genre: "G",
+  },
+  {
+    slug: "b",
+    artist: "B",
+    name: "B",
+    imageSource: "b.jpg",
+    year: "2",
+    genre: "G",
+  },
+  {
+    slug: "c",
+    artist: "C",
+    name: "C",
+    imageSource: "c.jpg",
+    year: "3",
+    genre: "G",
+  },
 ];
 
 afterEach(() => vi.restoreAllMocks());
