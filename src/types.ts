@@ -18,3 +18,5 @@ export type ArtPieceInfo = {
   isFavorite: boolean;
   comments: ArtPieceComment[];
 };
+
+export type Theme = "light" | "dark";

@@ -1,13 +1,20 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router";
 
+import type { Theme } from "../types";
 import Navigation from "./Navigation";
 
-function renderNavigation(path: string) {
+function renderNavigation(
+  path: string,
+  {
+    theme = "dark",
+    onToggleTheme = () => undefined,
+  }: { theme?: Theme; onToggleTheme?: () => void } = {}
+) {
   render(
     <MemoryRouter initialEntries={[path]}>
-      <Navigation />
+      <Navigation theme={theme} onToggleTheme={onToggleTheme} />
       <Routes>
         <Route path="/" element={<p>Spotlight page</p>} />
         <Route path="/art-pieces" element={<p>Gallery page</p>} />
@@ -78,4 +85,27 @@ test("highlights the Favorites link on the favorites page", () => {
   expect(screen.getByRole("link", { name: "Spotlight" })).not.toHaveClass(
     "active"
   );
+});
+
+test("shows a button that tells what happens on click", () => {
+  renderNavigation("/", { theme: "dark" });
+  expect(
+    screen.getByRole("button", { name: "Switch to light mode" })
+  ).toBeInTheDocument();
+  cleanup();
+
+  renderNavigation("/", { theme: "light" });
+  expect(
+    screen.getByRole("button", { name: "Switch to dark mode" })
+  ).toBeInTheDocument();
+});
+
+test("calls onToggleTheme when the theme button is clicked", async () => {
+  const user = userEvent.setup();
+  const onToggleTheme = vi.fn();
+  renderNavigation("/", { onToggleTheme });
+
+  await user.click(screen.getByRole("button", { name: /Switch to/ }));
+
+  expect(onToggleTheme).toHaveBeenCalledTimes(1);
 });
