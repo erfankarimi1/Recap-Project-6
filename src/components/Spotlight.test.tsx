@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 import Spotlight from "./Spotlight";
 
@@ -64,4 +65,37 @@ test("shows a favorite button", () => {
   expect(
     screen.getByRole("button", { name: "Favorite Piece B" })
   ).toBeInTheDocument();
+});
+
+test("marks the favorite button as pressed for a favorite", () => {
+  vi.spyOn(Math, "random").mockReturnValue(0.99);
+  render(
+    <Spotlight
+      pieces={pieces}
+      isFavorite={(slug) => slug === "b"}
+      onToggleFavorite={() => undefined}
+    />
+  );
+
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece B", pressed: true })
+  ).toBeInTheDocument();
+});
+
+test("calls onToggleFavorite with the slug of the spotlight piece", async () => {
+  vi.spyOn(Math, "random").mockReturnValue(0.99);
+  const user = userEvent.setup();
+  const onToggleFavorite = vi.fn();
+  render(
+    <Spotlight
+      pieces={pieces}
+      isFavorite={() => false}
+      onToggleFavorite={onToggleFavorite}
+    />
+  );
+
+  await user.click(screen.getByRole("button", { name: "Favorite Piece B" }));
+
+  expect(onToggleFavorite).toHaveBeenCalledTimes(1);
+  expect(onToggleFavorite).toHaveBeenCalledWith("b");
 });
