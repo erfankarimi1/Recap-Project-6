@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router";
 
@@ -12,6 +12,7 @@ const pieces = [
     imageSource: "https://example.com/wheat-field.jpg",
     year: "1889",
     genre: "Landscape Painting",
+    colors: ["#37412E", "#8D7332", "#838665", "#718F98", "#9DA59E"],
   },
 ];
 
@@ -90,4 +91,11 @@ test("shows the comment form", () => {
   expect(
     screen.getByRole("button", { name: "Add comment" })
   ).toBeInTheDocument();
+});
+
+test("shows the color palette", () => {
+  renderDetails();
+
+  const palette = screen.getByRole("list", { name: "Color palette" });
+  expect(within(palette).getAllByRole("listitem")).toHaveLength(5);
 });
