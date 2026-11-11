@@ -10,6 +10,7 @@ const pieces = [
     imageSource: "a.jpg",
     year: "1900",
     genre: "Genre A",
+    colors: ["#000000", "#ffffff"],
   },
   {
     slug: "b",
@@ -18,6 +19,7 @@ const pieces = [
     imageSource: "b.jpg",
     year: "1910",
     genre: "Genre B",
+    colors: ["#000000", "#ffffff"],
   },
 ];
 

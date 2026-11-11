@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router";
 
 import type { ArtPiece, ArtPieceComment } from "../types";
+import ColorPalette from "./ColorPalette";
 import CommentForm from "./CommentForm";
 import Comments from "./Comments";
 import FavoriteButton from "./FavoriteButton";
@@ -38,6 +39,7 @@ export default function ArtPieceDetails({
       <p>{piece.artist}</p>
       <p>{piece.year}</p>
       <p>{piece.genre}</p>
+      <ColorPalette colors={piece.colors} />
       <Comments comments={getComments(piece.slug)} />
       <CommentForm onSubmit={(text) => onAddComment(piece.slug, text)} />
     </article>

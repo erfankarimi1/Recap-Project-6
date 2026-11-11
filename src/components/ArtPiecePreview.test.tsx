@@ -10,6 +10,7 @@ const piece = {
   imageSource: "https://example.com/wheat-field.jpg",
   year: "1889",
   genre: "Landscape Painting",
+  colors: ["#000000", "#ffffff"],
 };
 
 function renderPreview() {
