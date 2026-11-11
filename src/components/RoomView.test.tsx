@@ -85,15 +85,6 @@ test("gives the image the width and height of the art piece", () => {
   expect(image).toHaveAttribute("height", "1528");
 });
 
-test("links back to the details page", () => {
-  renderRoomView();
-
-  expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute(
-    "href",
-    "/art-pieces/wheat-field"
-  );
-});
-
 test("shows a message for an unknown art piece", () => {
   renderRoomView("/art-pieces/unknown/room");
 
@@ -191,4 +182,10 @@ test("starts in the middle of the wall each time the room view opens", () => {
   expect(
     screen.getByRole("group", { name: "Move Wheat Field with Cypresses" })
   ).toHaveStyle({ left: "38%", top: "21%" });
+});
+
+test("has no back link of its own", () => {
+  renderRoomView();
+
+  expect(screen.queryByRole("link", { name: "Back" })).not.toBeInTheDocument();
 });

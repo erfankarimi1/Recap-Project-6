@@ -191,3 +191,25 @@ test("token pairs meet AA contrast in light mode", () => {
     ).toBeGreaterThanOrEqual(4.5);
   }
 });
+
+test("fixes the corner buttons in their corners", () => {
+  expect(ruleBody(".corner-button")).toContain("position: fixed");
+
+  const topLeft = ruleBody(".corner-top-left");
+  expect(topLeft).toMatch(/\btop:/);
+  expect(topLeft).toMatch(/\bleft:/);
+
+  const topRight = ruleBody(".corner-top-right");
+  expect(topRight).toMatch(/\btop:/);
+  expect(topRight).toMatch(/\bright:/);
+
+  // The go-to-top button stays above the fixed navigation bar
+  const bottomRight = ruleBody(".corner-bottom-right");
+  expect(bottomRight).toMatch(/\bright:/);
+  expect(bottomRight).toMatch(/\bbottom:[^;]*var\(--nav-height\)/);
+});
+
+test("keeps the page content below the corner buttons", () => {
+  // The buttons are 2.75rem high and 0.75rem from the top, plus a gap
+  expect(ruleBody("main")).toContain("calc(4.5rem + env(safe-area-inset-top))");
+});

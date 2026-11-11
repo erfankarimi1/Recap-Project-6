@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link, useParams } from "react-router";
+import { useParams } from "react-router";
 
 import { isArrowKey, moveBy, moveByKey, startPosition } from "../roomPosition";
 import type { Position } from "../roomPosition";
@@ -79,7 +79,6 @@ export default function RoomView({ pieces }: RoomViewProps) {
         src="/room.jpg"
         alt="A living room with an empty wall"
       />
-      <Link to={`/art-pieces/${piece.slug}`}>Back</Link>
       <div
         className="room-picture"
         role="group"
