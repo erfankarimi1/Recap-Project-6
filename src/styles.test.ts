@@ -27,12 +27,16 @@ test("defines all color tokens", () => {
   }
 });
 
-test("has no color values outside :root", () => {
-  const outsideRoot = css.replace(/:root\s*{[^}]*}/, "");
+test("has no color values outside the token blocks", () => {
+  // The token blocks are :root (dark) and :root[data-theme="light"]
+  const outsideTokens = css.replace(
+    /:root(?:\[data-theme="light"\])?\s*{[^}]*}/g,
+    ""
+  );
   const colorValue =
     /#[0-9a-f]{3,8}\b|\b(?:rgb|hsl)a?\(|\b(?:white|black|red|gray|grey)\b/i;
 
-  expect(outsideRoot).not.toMatch(colorValue);
+  expect(outsideTokens).not.toMatch(colorValue);
 });
 
 function tokenColor(name: string) {
@@ -127,4 +131,63 @@ test("stacks the Spotlight on small screens and uses two columns on desktop", ()
 
 test("lays the gallery out as a grid that fills the available width", () => {
   expect(ruleBody(".art-list")).toContain("repeat(auto-fill");
+});
+
+const LIGHT_SELECTOR = ':root[data-theme="light"]';
+
+function colorTokens(body: string) {
+  const tokens = new Map<string, string>();
+  for (const match of body.matchAll(/(--color-[\w-]+):([^;]+);/g)) {
+    tokens.set(match[1], match[2].trim());
+  }
+  return tokens;
+}
+
+test("defines every color token for both modes", () => {
+  const dark = [...colorTokens(ruleBody(":root")).keys()].sort();
+  const light = [...colorTokens(ruleBody(LIGHT_SELECTOR)).keys()].sort();
+
+  expect(dark.length).toBeGreaterThan(0);
+  expect(light).toEqual(dark);
+});
+
+function relativeLuminance(hex: string) {
+  const [r, g, b] = [1, 3, 5]
+    .map((start) => parseInt(hex.slice(start, start + 2), 16) / 255)
+    .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrastBetween(first: string, second: string) {
+  const [light, dark] = [
+    relativeLuminance(first),
+    relativeLuminance(second),
+  ].sort((a, b) => b - a);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+test("token pairs meet AA contrast in light mode", () => {
+  const tokens = colorTokens(ruleBody(LIGHT_SELECTOR));
+  const color = (name: string) => {
+    const value = tokens.get(name);
+    if (!value?.match(/^#[0-9a-f]{6}$/i)) {
+      throw new Error(`${name} must be a 6-digit hex color in light mode`);
+    }
+    return value;
+  };
+  const textPairs = [
+    ["--color-text", "--color-background"],
+    ["--color-text", "--color-surface"],
+    ["--color-text-muted", "--color-background"],
+    ["--color-text-muted", "--color-surface"],
+    ["--color-accent", "--color-background"],
+    ["--color-accent-contrast", "--color-accent"],
+  ];
+
+  for (const [foreground, background] of textPairs) {
+    expect(
+      contrastBetween(color(foreground), color(background)),
+      `${foreground} on ${background}`
+    ).toBeGreaterThanOrEqual(4.5);
+  }
 });

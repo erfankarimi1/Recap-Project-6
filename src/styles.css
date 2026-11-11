@@ -16,6 +16,20 @@
   --nav-height: calc(4.5rem + env(safe-area-inset-bottom));
 }
 
+/* The light mode overrides the color tokens above, and nothing else */
+:root[data-theme="light"] {
+  --color-background: #f6f3ec;
+  --color-surface: #ffffff;
+  --color-text: #1f1c18;
+  --color-text-muted: #5a5348;
+  --color-accent: #8a5a00;
+  --color-accent-contrast: #ffffff;
+  --color-border: #d9d2c4;
+  --color-hover: #0000001a;
+  --color-focus: #8a5a00;
+  --color-favorite: #c2305a;
+}
+
 *,
 *::before,
 *::after {
@@ -95,6 +109,25 @@ nav a.active {
   font-weight: 600;
   color: var(--color-accent-contrast);
   background: var(--color-accent);
+}
+
+.theme-toggle {
+  padding: 0.5rem clamp(0.75rem, 4vw, 1.25rem);
+  font: inherit;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  color: var(--color-text);
+  background: var(--color-hover);
 }
 
 .art-list {
