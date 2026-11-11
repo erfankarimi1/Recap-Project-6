@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { SWRConfig } from "swr";
@@ -277,4 +277,35 @@ test("shows an active favorite button on each favorite", async () => {
 
   expect(screen.queryByText("Piece A")).not.toBeInTheDocument();
   expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+});
+
+test("adds a comment to this art piece only", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces/a"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+
+  await user.type(
+    await screen.findByRole("textbox", { name: "Comment" }),
+    "Lovely"
+  );
+  await user.click(screen.getByRole("button", { name: "Add comment" }));
+
+  const comments = screen.getByRole("region", { name: "Comments" });
+  expect(within(comments).getByText("Lovely")).toBeInTheDocument();
+
+  await user.click(screen.getByRole("link", { name: "Gallery" }));
+  await user.click(screen.getByRole("link", { name: /Piece B/ }));
+
+  const otherComments = screen.getByRole("region", { name: "Comments" });
+  expect(within(otherComments).queryByText("Lovely")).not.toBeInTheDocument();
+  expect(within(otherComments).queryAllByRole("listitem")).toHaveLength(0);
 });

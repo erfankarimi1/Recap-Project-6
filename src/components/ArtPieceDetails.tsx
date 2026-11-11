@@ -1,18 +1,24 @@
 import { Link, useParams } from "react-router";
 
-import type { ArtPiece } from "../types";
+import type { ArtPiece, ArtPieceComment } from "../types";
+import CommentForm from "./CommentForm";
+import Comments from "./Comments";
 import FavoriteButton from "./FavoriteButton";
 
 type ArtPieceDetailsProps = {
   pieces: ArtPiece[];
   isFavorite: (slug: string) => boolean;
   onToggleFavorite: (slug: string) => void;
+  getComments: (slug: string) => ArtPieceComment[];
+  onAddComment: (slug: string, text: string) => void;
 };
 
 export default function ArtPieceDetails({
   pieces,
   isFavorite,
   onToggleFavorite,
+  getComments,
+  onAddComment,
 }: ArtPieceDetailsProps) {
   const { slug } = useParams();
   const piece = pieces.find((item) => item.slug === slug);
@@ -32,6 +38,8 @@ export default function ArtPieceDetails({
       <p>{piece.artist}</p>
       <p>{piece.year}</p>
       <p>{piece.genre}</p>
+      <Comments comments={getComments(piece.slug)} />
+      <CommentForm onSubmit={(text) => onAddComment(piece.slug, text)} />
     </article>
   );
 }
