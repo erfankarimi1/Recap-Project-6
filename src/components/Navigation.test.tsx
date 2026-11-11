@@ -11,6 +11,7 @@ function renderNavigation(path: string) {
       <Routes>
         <Route path="/" element={<p>Spotlight page</p>} />
         <Route path="/art-pieces" element={<p>Gallery page</p>} />
+        <Route path="/favorites" element={<p>Favorites page</p>} />
       </Routes>
     </MemoryRouter>
   );
@@ -47,4 +48,22 @@ test("navigates between the pages", async () => {
 
   await user.click(screen.getByRole("link", { name: "Spotlight" }));
   expect(screen.getByText("Spotlight page")).toBeInTheDocument();
+});
+
+test("shows a link to Favorites", () => {
+  renderNavigation("/");
+
+  expect(screen.getByRole("link", { name: "Favorites" })).toHaveAttribute(
+    "href",
+    "/favorites"
+  );
+});
+
+test("navigates to the favorites page", async () => {
+  const user = userEvent.setup();
+  renderNavigation("/");
+
+  await user.click(screen.getByRole("link", { name: "Favorites" }));
+
+  expect(screen.getByText("Favorites page")).toBeInTheDocument();
 });
