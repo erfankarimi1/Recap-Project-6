@@ -26,7 +26,11 @@ const pieces = [
 function renderArtPieces(items: ArtPiece[]) {
   render(
     <MemoryRouter>
-      <ArtPieces pieces={items} />
+      <ArtPieces
+        pieces={items}
+        isFavorite={() => false}
+        onToggleFavorite={() => undefined}
+      />
     </MemoryRouter>
   );
 }
@@ -43,4 +47,15 @@ test("renders an empty list without art pieces", () => {
   renderArtPieces([]);
 
   expect(screen.getByRole("list")).toBeEmptyDOMElement();
+});
+
+test("shows a favorite button for each art piece", () => {
+  renderArtPieces(pieces);
+
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece A" })
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece B" })
+  ).toBeInTheDocument();
 });

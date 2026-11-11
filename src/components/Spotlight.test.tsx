@@ -21,11 +21,16 @@ const pieces = [
   },
 ];
 
+const favoriteProps = {
+  isFavorite: () => false,
+  onToggleFavorite: () => undefined,
+};
+
 afterEach(() => vi.restoreAllMocks());
 
 test("shows the image and artist of the randomly selected art piece", () => {
   vi.spyOn(Math, "random").mockReturnValue(0.99);
-  render(<Spotlight pieces={pieces} />);
+  render(<Spotlight pieces={pieces} {...favoriteProps} />);
 
   expect(screen.getByRole("img", { name: "Piece B" })).toHaveAttribute(
     "src",
@@ -36,16 +41,25 @@ test("shows the image and artist of the randomly selected art piece", () => {
 
 test("keeps the same art piece when it re-renders", () => {
   const random = vi.spyOn(Math, "random").mockReturnValue(0);
-  const { rerender } = render(<Spotlight pieces={pieces} />);
+  const { rerender } = render(<Spotlight pieces={pieces} {...favoriteProps} />);
   random.mockReturnValue(0.99);
-  rerender(<Spotlight pieces={pieces} />);
+  rerender(<Spotlight pieces={pieces} {...favoriteProps} />);
 
   expect(screen.getByText("Artist A")).toBeInTheDocument();
   expect(screen.queryByText("Artist B")).not.toBeInTheDocument();
 });
 
 test("shows a message without art pieces", () => {
-  render(<Spotlight pieces={[]} />);
+  render(<Spotlight pieces={[]} {...favoriteProps} />);
 
   expect(screen.getByText("No art pieces to show.")).toBeInTheDocument();
+});
+
+test("shows a favorite button", () => {
+  vi.spyOn(Math, "random").mockReturnValue(0.99);
+  render(<Spotlight pieces={pieces} {...favoriteProps} />);
+
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece B" })
+  ).toBeInTheDocument();
 });
