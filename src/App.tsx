@@ -4,9 +4,12 @@ import { Route, Routes } from "react-router";
 
 import ArtPieceDetails from "./components/ArtPieceDetails";
 import ArtPieces from "./components/ArtPieces";
+import BackButton from "./components/BackButton";
 import Navigation from "./components/Navigation";
 import RoomView from "./components/RoomView";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 import Spotlight from "./components/Spotlight";
+import ThemeButton from "./components/ThemeButton";
 import { ART_API_URL, fetcher } from "./fetcher";
 import { loadArtPiecesInfo, saveArtPiecesInfo } from "./storage";
 import { getInitialTheme, saveTheme } from "./theme";
@@ -125,7 +128,10 @@ export default function App() {
           <Route path="*" element={<p>Page not found</p>} />
         </Routes>
       </main>
-      <Navigation theme={theme} onToggleTheme={handleToggleTheme} />
+      <Navigation />
+      <BackButton />
+      <ThemeButton theme={theme} onToggle={handleToggleTheme} />
+      <ScrollToTopButton />
     </>
   );
 }

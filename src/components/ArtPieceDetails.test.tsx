@@ -67,24 +67,6 @@ test("shows image, title, artist, year and genre", () => {
   expect(screen.getByText("Landscape Painting")).toBeInTheDocument();
 });
 
-test("shows a back button", () => {
-  renderDetails();
-
-  expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute(
-    "href",
-    "/art-pieces"
-  );
-});
-
-test("navigates back to the list", async () => {
-  const user = userEvent.setup();
-  renderDetails();
-
-  await user.click(screen.getByRole("link", { name: "Back" }));
-
-  expect(screen.getByText("Gallery page")).toBeInTheDocument();
-});
-
 test("shows a favorite button", () => {
   renderDetails();
 
@@ -179,4 +161,10 @@ test("shows a link to view the art piece in a room", () => {
     "href",
     "/art-pieces/wheat-field/room"
   );
+});
+
+test("has no back link of its own", () => {
+  renderDetails();
+
+  expect(screen.queryByRole("link", { name: "Back" })).not.toBeInTheDocument();
 });

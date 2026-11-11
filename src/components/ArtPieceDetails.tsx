@@ -28,7 +28,6 @@ export default function ArtPieceDetails({
 
   return (
     <article className="art-piece details">
-      <Link to="/art-pieces">Back</Link>
       <img src={piece.imageSource} alt={piece.name} />
       <FavoriteButton
         name={piece.name}

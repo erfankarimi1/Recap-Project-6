@@ -533,3 +533,41 @@ test("opens the room view from the details page", async () => {
     within(room).getByRole("img", { name: "Piece A" })
   ).toBeInTheDocument();
 });
+
+test("shows the theme, back and go-to-top buttons on every page", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  // The go-to-top button needs a page that is scrolled down
+  Object.defineProperty(window, "scrollY", { configurable: true, value: 500 });
+
+  try {
+    for (const path of [
+      "/",
+      "/art-pieces",
+      "/favorites",
+      "/art-pieces/a",
+      "/nowhere",
+    ]) {
+      const page = render(
+        <SWRConfig value={{ provider: () => new Map() }}>
+          <MemoryRouter initialEntries={[path]}>
+            <App />
+          </MemoryRouter>
+        </SWRConfig>
+      );
+      await screen.findByRole("navigation", { name: "Main navigation" });
+
+      for (const name of [/Switch to/, "Back", "Go to top"]) {
+        expect(
+          screen.getAllByRole("button", { name }),
+          `${String(name)} on ${path}`
+        ).toHaveLength(1);
+      }
+      page.unmount();
+    }
+  } finally {
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 0 });
+  }
+});
