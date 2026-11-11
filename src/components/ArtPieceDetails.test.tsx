@@ -27,6 +27,8 @@ function renderDetails(path = "/art-pieces/wheat-field") {
               pieces={pieces}
               isFavorite={() => false}
               onToggleFavorite={() => undefined}
+              getComments={() => []}
+              onAddComment={() => undefined}
             />
           }
         />
@@ -72,5 +74,20 @@ test("shows a favorite button", () => {
 
   expect(
     screen.getByRole("button", { name: "Favorite Wheat Field with Cypresses" })
+  ).toBeInTheDocument();
+});
+
+test("shows the comments section", () => {
+  renderDetails();
+
+  expect(screen.getByRole("region", { name: "Comments" })).toBeInTheDocument();
+});
+
+test("shows the comment form", () => {
+  renderDetails();
+
+  expect(screen.getByRole("textbox", { name: "Comment" })).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Add comment" })
   ).toBeInTheDocument();
 });

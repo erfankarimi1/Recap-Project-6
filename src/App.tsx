@@ -18,16 +18,32 @@ export default function App() {
     return artPiecesInfo.some((info) => info.slug === slug && info.isFavorite);
   }
 
-  function handleToggleFavorite(slug: string) {
+  // Changes the info of one art piece, creating its entry on first use
+  function updateInfo(
+    slug: string,
+    update: (info: ArtPieceInfo) => ArtPieceInfo
+  ) {
     setArtPiecesInfo((current) =>
       current.some((info) => info.slug === slug)
-        ? current.map((info) =>
-            info.slug === slug
-              ? { ...info, isFavorite: !info.isFavorite }
-              : info
-          )
-        : [...current, { slug, isFavorite: true }]
+        ? current.map((info) => (info.slug === slug ? update(info) : info))
+        : [...current, update({ slug, isFavorite: false, comments: [] })]
     );
+  }
+
+  function handleToggleFavorite(slug: string) {
+    updateInfo(slug, (info) => ({ ...info, isFavorite: !info.isFavorite }));
+  }
+
+  function handleAddComment(slug: string, text: string) {
+    const comment = { text, date: new Date().toISOString() };
+    updateInfo(slug, (info) => ({
+      ...info,
+      comments: [...info.comments, comment],
+    }));
+  }
+
+  function getComments(slug: string) {
+    return artPiecesInfo.find((info) => info.slug === slug)?.comments ?? [];
   }
 
   if (isLoading) return <main>Loading…</main>;
@@ -64,6 +80,8 @@ export default function App() {
                 pieces={pieces}
                 isFavorite={isFavorite}
                 onToggleFavorite={handleToggleFavorite}
+                getComments={getComments}
+                onAddComment={handleAddComment}
               />
             }
           />
