@@ -13,7 +13,7 @@ export default function ArtPieces({
   onToggleFavorite,
 }: ArtPiecesProps) {
   return (
-    <ul>
+    <ul className="art-list">
       {pieces.map((piece) => (
         <li key={piece.slug}>
           <ArtPiecePreview
