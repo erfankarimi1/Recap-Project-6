@@ -40,6 +40,7 @@ export default function ArtPieceDetails({
       <p>{piece.year}</p>
       <p>{piece.genre}</p>
       <ColorPalette colors={piece.colors} />
+      <Link to={`/art-pieces/${piece.slug}/room`}>View in room</Link>
       <Comments comments={getComments(piece.slug)} />
       <CommentForm onSubmit={(text) => onAddComment(piece.slug, text)} />
     </article>
