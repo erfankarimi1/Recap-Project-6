@@ -3,8 +3,22 @@ import { render, screen } from "@testing-library/react";
 import Spotlight from "./Spotlight";
 
 const pieces = [
-  { slug: "a", artist: "Artist A", name: "Piece A", imageSource: "a.jpg" },
-  { slug: "b", artist: "Artist B", name: "Piece B", imageSource: "b.jpg" },
+  {
+    slug: "a",
+    artist: "Artist A",
+    name: "Piece A",
+    imageSource: "a.jpg",
+    year: "1900",
+    genre: "Genre A",
+  },
+  {
+    slug: "b",
+    artist: "Artist B",
+    name: "Piece B",
+    imageSource: "b.jpg",
+    year: "1910",
+    genre: "Genre B",
+  },
 ];
 
 afterEach(() => vi.restoreAllMocks());

@@ -10,12 +10,16 @@ const pieces = [
     artist: "Artist A",
     name: "Piece A",
     imageSource: "https://example.com/a.jpg",
+    year: "1900",
+    genre: "Genre A",
   },
   {
     slug: "b",
     artist: "Artist B",
     name: "Piece B",
     imageSource: "https://example.com/b.jpg",
+    year: "1910",
+    genre: "Genre B",
   },
 ];
 
@@ -92,4 +96,38 @@ test("shows the navigation and a message for unknown URLs", async () => {
   expect(await screen.findByText("Page not found")).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Spotlight" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Gallery" })).toBeInTheDocument();
+});
+
+test("shows the details of an art piece on /art-pieces/:slug", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces/b"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+
+  expect(await screen.findByText("Genre B")).toBeInTheDocument();
+  expect(screen.getByText("Piece B")).toBeInTheDocument();
+  expect(screen.queryByText("Piece A")).not.toBeInTheDocument();
+});
+
+test("shows a message for an unknown art piece", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces/nope"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+
+  expect(await screen.findByText("Art piece not found")).toBeInTheDocument();
 });

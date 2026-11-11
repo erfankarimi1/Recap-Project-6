@@ -1,6 +1,7 @@
 import useSWR from "swr";
 import { Route, Routes } from "react-router";
 
+import ArtPieceDetails from "./components/ArtPieceDetails";
 import ArtPieces from "./components/ArtPieces";
 import Navigation from "./components/Navigation";
 import Spotlight from "./components/Spotlight";
@@ -19,6 +20,10 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Spotlight pieces={pieces} />} />
           <Route path="/art-pieces" element={<ArtPieces pieces={pieces} />} />
+          <Route
+            path="/art-pieces/:slug"
+            element={<ArtPieceDetails pieces={pieces} />}
+          />
           <Route path="*" element={<p>Page not found</p>} />
         </Routes>
       </main>
