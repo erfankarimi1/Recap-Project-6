@@ -192,3 +192,89 @@ test("keeps the favorite status when switching between pages", async () => {
     screen.getByRole("button", { name: "Favorite Piece A", pressed: true })
   ).toBeInTheDocument();
 });
+
+test("shows the favorites page on the route /favorites", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/favorites"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+
+  expect(await screen.findByRole("list")).toBeInTheDocument();
+  expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
+});
+
+test("shows only the favorite art pieces on /favorites", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  renderApp();
+
+  await user.click(
+    await screen.findByRole("button", { name: "Favorite Piece A" })
+  );
+  await user.click(screen.getByRole("link", { name: "Favorites" }));
+
+  expect(screen.getAllByRole("listitem")).toHaveLength(1);
+  expect(screen.getByText("Piece A")).toBeInTheDocument();
+  expect(screen.queryByText("Piece B")).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole("link", { name: "Gallery" }));
+  await user.click(screen.getByRole("button", { name: "Favorite Piece B" }));
+  await user.click(screen.getByRole("link", { name: "Favorites" }));
+
+  expect(screen.getAllByRole("listitem")).toHaveLength(2);
+  expect(screen.getByText("Piece B")).toBeInTheDocument();
+});
+
+test("shows image, title and artist of each favorite", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  renderApp();
+
+  await user.click(
+    await screen.findByRole("button", { name: "Favorite Piece B" })
+  );
+  await user.click(screen.getByRole("link", { name: "Favorites" }));
+
+  expect(screen.getByRole("img", { name: "Piece B" })).toHaveAttribute(
+    "src",
+    "https://example.com/b.jpg"
+  );
+  expect(screen.getByText("Piece B")).toBeInTheDocument();
+  expect(screen.getByText("Artist B")).toBeInTheDocument();
+});
+
+test("shows an active favorite button on each favorite", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  renderApp();
+
+  await user.click(
+    await screen.findByRole("button", { name: "Favorite Piece A" })
+  );
+  await user.click(screen.getByRole("link", { name: "Favorites" }));
+
+  const button = screen.getByRole("button", {
+    name: "Favorite Piece A",
+    pressed: true,
+  });
+  await user.click(button);
+
+  expect(screen.queryByText("Piece A")).not.toBeInTheDocument();
+  expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+});
