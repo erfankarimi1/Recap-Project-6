@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 
 import ArtPiecePreview from "./ArtPiecePreview";
@@ -13,13 +14,19 @@ const piece = {
   colors: ["#000000", "#ffffff"],
 };
 
-function renderPreview() {
-  render(
+function renderPreview({
+  isFavorite = false,
+  onToggleFavorite = () => undefined,
+}: {
+  isFavorite?: boolean;
+  onToggleFavorite?: (slug: string) => void;
+} = {}) {
+  return render(
     <MemoryRouter>
       <ArtPiecePreview
         piece={piece}
-        isFavorite={false}
-        onToggleFavorite={() => undefined}
+        isFavorite={isFavorite}
+        onToggleFavorite={onToggleFavorite}
       />
     </MemoryRouter>
   );
@@ -41,4 +48,36 @@ test("links to the details page of the art piece", () => {
   expect(
     screen.getByRole("link", { name: /Wheat Field with Cypresses/ })
   ).toHaveAttribute("href", "/art-pieces/wheat-field");
+});
+
+test("shows a favorite button that reflects the favorite status", () => {
+  const notFavorite = renderPreview();
+  expect(
+    screen.getByRole("button", {
+      name: "Favorite Wheat Field with Cypresses",
+      pressed: false,
+    })
+  ).toBeInTheDocument();
+  notFavorite.unmount();
+
+  renderPreview({ isFavorite: true });
+  expect(
+    screen.getByRole("button", {
+      name: "Favorite Wheat Field with Cypresses",
+      pressed: true,
+    })
+  ).toBeInTheDocument();
+});
+
+test("calls onToggleFavorite with the slug when the favorite button is clicked", async () => {
+  const user = userEvent.setup();
+  const onToggleFavorite = vi.fn();
+  renderPreview({ onToggleFavorite });
+
+  await user.click(
+    screen.getByRole("button", { name: "Favorite Wheat Field with Cypresses" })
+  );
+
+  expect(onToggleFavorite).toHaveBeenCalledTimes(1);
+  expect(onToggleFavorite).toHaveBeenCalledWith("wheat-field");
 });

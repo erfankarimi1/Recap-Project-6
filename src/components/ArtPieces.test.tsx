@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 
 import type { ArtPiece } from "../types";
@@ -25,13 +26,22 @@ const pieces = [
   },
 ];
 
-function renderArtPieces(items: ArtPiece[]) {
+function renderArtPieces(
+  items: ArtPiece[],
+  {
+    isFavorite = () => false,
+    onToggleFavorite = () => undefined,
+  }: {
+    isFavorite?: (slug: string) => boolean;
+    onToggleFavorite?: (slug: string) => void;
+  } = {}
+) {
   render(
     <MemoryRouter>
       <ArtPieces
         pieces={items}
-        isFavorite={() => false}
-        onToggleFavorite={() => undefined}
+        isFavorite={isFavorite}
+        onToggleFavorite={onToggleFavorite}
       />
     </MemoryRouter>
   );
@@ -60,4 +70,26 @@ test("shows a favorite button for each art piece", () => {
   expect(
     screen.getByRole("button", { name: "Favorite Piece B" })
   ).toBeInTheDocument();
+});
+
+test("marks only the favorite pieces as pressed", () => {
+  renderArtPieces(pieces, { isFavorite: (slug) => slug === "b" });
+
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece A", pressed: false })
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece B", pressed: true })
+  ).toBeInTheDocument();
+});
+
+test("calls onToggleFavorite with the slug of the clicked piece", async () => {
+  const user = userEvent.setup();
+  const onToggleFavorite = vi.fn();
+  renderArtPieces(pieces, { onToggleFavorite });
+
+  await user.click(screen.getByRole("button", { name: "Favorite Piece B" }));
+
+  expect(onToggleFavorite).toHaveBeenCalledTimes(1);
+  expect(onToggleFavorite).toHaveBeenCalledWith("b");
 });
