@@ -73,3 +73,58 @@ test("token pairs meet AA contrast", () => {
     ).toBeGreaterThanOrEqual(4.5);
   }
 });
+
+function escapeRegExp(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// The declarations of the rule whose (last) selector is `selector`
+function ruleBody(selector: string, source = css) {
+  const match = new RegExp(`${escapeRegExp(selector)}\\s*{([^}]*)}`).exec(
+    source
+  );
+  if (!match) throw new Error(`No rule found for ${selector}`);
+  return match[1];
+}
+
+test("pages and components take their colors from the tokens", () => {
+  const selectors = [
+    "body",
+    "a",
+    "nav",
+    "nav a",
+    "nav a.active",
+    ".favorite-button",
+    ".palette li",
+    ".comments li",
+    ".comment-form textarea",
+    ".comment-form button",
+    ".slideshow-controls button",
+    ".artwork-info p",
+  ];
+
+  for (const selector of selectors) {
+    expect(ruleBody(selector), selector).toContain("var(--color-");
+  }
+});
+
+test("uses a serif title and a sans-serif body font", () => {
+  expect(ruleBody(".artwork-info h2")).toContain("var(--font-serif)");
+  expect(ruleBody("body")).toContain("var(--font-sans)");
+  expect(ruleBody(":root")).toMatch(/--font-serif:[^;]*\bserif\b/);
+  expect(ruleBody(":root")).toMatch(/--font-sans:[^;]*\bsans-serif\b/);
+});
+
+test("stacks the Spotlight on small screens and uses two columns on desktop", () => {
+  const desktop = /@media \(min-width: 64rem\)\s*{([\s\S]*?\n})\n/.exec(
+    css
+  )?.[1];
+
+  expect(desktop).toBeDefined();
+  expect(ruleBody(".spotlight")).not.toContain("grid-template-columns");
+  expect(ruleBody(".spotlight", desktop)).toContain("grid-template-columns");
+});
+
+test("lays the gallery out as a grid that fills the available width", () => {
+  expect(ruleBody(".art-list")).toContain("repeat(auto-fill");
+});
