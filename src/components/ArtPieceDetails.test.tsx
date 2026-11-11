@@ -14,6 +14,7 @@ const pieces = [
     year: "1889",
     genre: "Landscape Painting",
     colors: ["#37412E", "#8D7332", "#838665", "#718F98", "#9DA59E"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
   },
 ];
 
@@ -169,4 +170,13 @@ test("shows a message for an unknown art piece", () => {
 
   expect(screen.getByText("Art piece not found")).toBeInTheDocument();
   expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+});
+
+test("shows a link to view the art piece in a room", () => {
+  renderDetails();
+
+  expect(screen.getByRole("link", { name: "View in room" })).toHaveAttribute(
+    "href",
+    "/art-pieces/wheat-field/room"
+  );
 });

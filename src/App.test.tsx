@@ -14,6 +14,7 @@ const pieces = [
     year: "1900",
     genre: "Genre A",
     colors: ["#000000", "#ffffff"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
   },
   {
     slug: "b",
@@ -23,6 +24,7 @@ const pieces = [
     year: "1910",
     genre: "Genre B",
     colors: ["#000000", "#ffffff"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
   },
 ];
 
@@ -488,4 +490,46 @@ test("keeps the chosen theme after a reload", async () => {
   await screen.findByRole("button", { name: /Switch to/ });
 
   expect(document.documentElement.dataset.theme).toBe(other);
+});
+
+test("shows the room view on the route /art-pieces/:slug/room", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces/b/room"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+
+  const room = await screen.findByRole("region", { name: "Room view" });
+  expect(
+    within(room).getByRole("img", { name: "Piece B" })
+  ).toBeInTheDocument();
+  expect(screen.queryByText("Genre B")).not.toBeInTheDocument();
+});
+
+test("opens the room view from the details page", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces/a"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+
+  await user.click(await screen.findByRole("link", { name: "View in room" }));
+
+  const room = screen.getByRole("region", { name: "Room view" });
+  expect(
+    within(room).getByRole("img", { name: "Piece A" })
+  ).toBeInTheDocument();
 });

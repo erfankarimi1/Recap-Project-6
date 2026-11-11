@@ -14,6 +14,7 @@ const pieces = [
     year: "1900",
     genre: "Genre A",
     colors: ["#000000", "#ffffff"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
   },
   {
     slug: "b",
@@ -23,6 +24,7 @@ const pieces = [
     year: "1910",
     genre: "Genre B",
     colors: ["#000000", "#ffffff"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
   },
 ];
 

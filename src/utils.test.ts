@@ -9,6 +9,7 @@ const pieces = [
     year: "1",
     genre: "G",
     colors: ["#000000", "#ffffff"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
   },
   {
     slug: "b",
@@ -18,6 +19,7 @@ const pieces = [
     year: "2",
     genre: "G",
     colors: ["#000000", "#ffffff"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
   },
   {
     slug: "c",
@@ -27,6 +29,7 @@ const pieces = [
     year: "3",
     genre: "G",
     colors: ["#000000", "#ffffff"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
   },
 ];
 

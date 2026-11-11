@@ -5,6 +5,7 @@ import { Route, Routes } from "react-router";
 import ArtPieceDetails from "./components/ArtPieceDetails";
 import ArtPieces from "./components/ArtPieces";
 import Navigation from "./components/Navigation";
+import RoomView from "./components/RoomView";
 import Spotlight from "./components/Spotlight";
 import { ART_API_URL, fetcher } from "./fetcher";
 import { loadArtPiecesInfo, saveArtPiecesInfo } from "./storage";
@@ -106,6 +107,10 @@ export default function App() {
                 onAddComment={handleAddComment}
               />
             }
+          />
+          <Route
+            path="/art-pieces/:slug/room"
+            element={<RoomView pieces={pieces} />}
           />
           <Route
             path="/favorites"

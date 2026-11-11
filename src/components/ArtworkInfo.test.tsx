@@ -10,6 +10,7 @@ const piece = {
   year: "1900",
   genre: "Genre A",
   colors: ["#000000"],
+  dimensions: { height: 100, width: 200, type: "jpg" },
 };
 
 test("shows the title as a heading", () => {
