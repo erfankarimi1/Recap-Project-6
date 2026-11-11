@@ -12,6 +12,7 @@ const piece = {
   year: "1889",
   genre: "Landscape Painting",
   colors: ["#000000", "#ffffff"],
+  dimensions: { height: 100, width: 200, type: "jpg" },
 };
 
 function renderPreview({
