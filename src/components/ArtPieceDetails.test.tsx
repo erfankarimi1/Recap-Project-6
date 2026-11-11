@@ -22,7 +22,13 @@ function renderDetails(path = "/art-pieces/wheat-field") {
         <Route path="/art-pieces" element={<p>Gallery page</p>} />
         <Route
           path="/art-pieces/:slug"
-          element={<ArtPieceDetails pieces={pieces} />}
+          element={
+            <ArtPieceDetails
+              pieces={pieces}
+              isFavorite={() => false}
+              onToggleFavorite={() => undefined}
+            />
+          }
         />
       </Routes>
     </MemoryRouter>
@@ -59,4 +65,12 @@ test("navigates back to the list", async () => {
   await user.click(screen.getByRole("link", { name: "Back" }));
 
   expect(screen.getByText("Gallery page")).toBeInTheDocument();
+});
+
+test("shows a favorite button", () => {
+  renderDetails();
+
+  expect(
+    screen.getByRole("button", { name: "Favorite Wheat Field with Cypresses" })
+  ).toBeInTheDocument();
 });

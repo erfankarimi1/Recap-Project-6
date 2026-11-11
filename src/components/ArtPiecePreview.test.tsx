@@ -15,7 +15,11 @@ const piece = {
 function renderPreview() {
   render(
     <MemoryRouter>
-      <ArtPiecePreview piece={piece} />
+      <ArtPiecePreview
+        piece={piece}
+        isFavorite={false}
+        onToggleFavorite={() => undefined}
+      />
     </MemoryRouter>
   );
 }

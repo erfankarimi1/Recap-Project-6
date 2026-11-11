@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { SWRConfig } from "swr";
 
@@ -130,4 +131,64 @@ test("shows a message for an unknown art piece", async () => {
   );
 
   expect(await screen.findByText("Art piece not found")).toBeInTheDocument();
+});
+
+test("marks an art piece as favorite when its button is clicked", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  renderApp();
+
+  const button = await screen.findByRole("button", {
+    name: "Favorite Piece A",
+    pressed: false,
+  });
+  await user.click(button);
+
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece A", pressed: true })
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece B", pressed: false })
+  ).toBeInTheDocument();
+});
+
+test("removes an art piece from the favorites on a second click", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  renderApp();
+
+  await user.click(
+    await screen.findByRole("button", { name: "Favorite Piece A" })
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Favorite Piece A", pressed: true })
+  );
+
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece A", pressed: false })
+  ).toBeInTheDocument();
+});
+
+test("keeps the favorite status when switching between pages", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  renderApp();
+
+  await user.click(
+    await screen.findByRole("button", { name: "Favorite Piece A" })
+  );
+  await user.click(screen.getByRole("link", { name: /Piece A/ }));
+
+  expect(
+    screen.getByRole("button", { name: "Favorite Piece A", pressed: true })
+  ).toBeInTheDocument();
 });
