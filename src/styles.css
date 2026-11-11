@@ -1,3 +1,21 @@
+:root {
+  /* Charcoal + warm gold. Change the theme here, nowhere else. */
+  --color-background: #1a1a1a;
+  --color-surface: #262626;
+  --color-text: #f2ede4;
+  --color-text-muted: #b5aea2;
+  --color-accent: #d4a24c;
+  --color-accent-contrast: #1a1a1a;
+  --color-border: #3d3a35;
+  --color-hover: #ffffff1f;
+  --color-focus: #f0c674;
+  --color-favorite: #e0607e;
+
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-sans: system-ui, sans-serif;
+  --nav-height: calc(4.5rem + env(safe-area-inset-bottom));
+}
+
 *,
 *::before,
 *::after {
@@ -6,16 +24,42 @@
 
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.5;
-  color: #222;
-  background: #f6f4ef;
+  color: var(--color-text);
+  background: var(--color-background);
+}
+
+a {
+  color: var(--color-accent);
+}
+
+h1,
+h2,
+h3,
+p {
+  overflow-wrap: anywhere;
+}
+
+img {
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 main {
-  max-width: 60rem;
+  max-width: 72rem;
   margin: 0 auto;
-  padding: 1rem 1rem 5rem;
+  padding: 1rem 1rem calc(var(--nav-height) + 1rem);
+}
+
+/* The slideshow uses the whole viewport */
+main:has(.spotlight) {
+  max-width: none;
+  padding: 0 0 var(--nav-height);
 }
 
 nav {
@@ -26,14 +70,14 @@ nav {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: #222;
-  box-shadow: 0 -2px 8px #0004;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
 }
 
 nav a {
-  padding: 0.5rem 1.25rem;
-  color: #ccc;
+  padding: 0.5rem clamp(0.75rem, 4vw, 1.25rem);
+  color: var(--color-text-muted);
   text-decoration: none;
   border-radius: 999px;
   transition:
@@ -43,14 +87,14 @@ nav a {
 
 nav a:hover,
 nav a:focus-visible {
-  color: white;
-  background: #ffffff22;
+  color: var(--color-text);
+  background: var(--color-hover);
 }
 
 nav a.active {
   font-weight: 600;
-  color: #222;
-  background: #f6f4ef;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
 }
 
 .art-list {
@@ -74,13 +118,26 @@ nav a.active {
   border-radius: 0.5rem;
 }
 
+.art-piece figure {
+  margin: 0;
+}
+
+.art-piece figcaption {
+  padding-top: 0.5rem;
+}
+
+.art-list a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.art-list a:hover strong {
+  color: var(--color-accent);
+}
+
 .art-piece h2,
 .art-piece p {
   margin: 0.25rem 0 0;
-}
-
-.spotlight img {
-  height: 28rem;
 }
 
 .favorite-button {
@@ -92,21 +149,29 @@ nav a.active {
   width: 2.5rem;
   height: 2.5rem;
   padding: 0;
-  color: #444;
+  color: var(--color-text-muted);
   cursor: pointer;
-  background: white;
-  border: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 50%;
 }
 
 .favorite-button[aria-pressed="true"] {
-  color: #d6336c;
+  color: var(--color-favorite);
 }
 
-.details img {
+.art-piece.details img {
   width: 100%;
-  max-height: 32rem;
+  height: auto;
+  max-height: 70vh;
+  max-height: 70dvh;
   object-fit: contain;
+  border-radius: 0.5rem;
+}
+
+.details {
+  max-width: 40rem;
+  margin: 0 auto;
 }
 
 .palette {
@@ -120,7 +185,7 @@ nav a.active {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  border: 1px solid #0003;
+  border: 1px solid var(--color-border);
 }
 
 .comments {
@@ -130,17 +195,242 @@ nav a.active {
 
 .comments li {
   padding: 0.5rem 0;
-  border-bottom: 1px solid #0002;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .comments time {
   display: block;
   font-size: 0.8rem;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .comment-form {
   display: grid;
   gap: 0.5rem;
+  width: 100%;
   max-width: 24rem;
+}
+
+.comment-form input,
+.comment-form textarea {
+  padding: 0.5rem;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+}
+
+.comment-form button {
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-accent-contrast);
+  cursor: pointer;
+  background: var(--color-accent);
+  border: none;
+  border-radius: 0.25rem;
+}
+
+/* Spotlight slideshow: image on the left, museum label on the right */
+.spotlight {
+  touch-action: pan-y;
+  display: grid;
+  gap: 1.5rem;
+  align-content: center;
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  max-width: 80rem;
+  min-height: calc(100vh - var(--nav-height));
+  min-height: calc(100dvh - var(--nav-height));
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  overflow: hidden;
+  background: var(--color-background);
+}
+
+/* Stacked layout: the label stays readable instead of stretching */
+.spotlight .artwork-info {
+  width: 100%;
+  max-width: 36rem;
+  text-align: center;
+}
+
+/* The wrapper hugs the image so the favorite button sits on the artwork */
+.spotlight .art-piece {
+  justify-self: center;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.spotlight .art-piece figure {
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.spotlight .art-piece img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 42vh;
+  max-height: 42dvh;
+  object-fit: contain;
+  border-radius: 0;
+  animation: slide-zoom 8s ease-out both;
+}
+
+.artwork-info {
+  animation: info-in 0.6s ease-out both;
+}
+
+.artwork-info h2 {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.artwork-info p {
+  margin: 0.25rem 0;
+  color: var(--color-text-muted);
+  letter-spacing: 0.03em;
+}
+
+.artwork-info .artwork-artist {
+  font-size: 1.1rem;
+  color: var(--color-text);
+}
+
+.slideshow-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  justify-content: center;
+  grid-column: 1 / -1;
+}
+
+.slideshow-controls button {
+  padding: 0.5rem 1rem;
+  font: inherit;
+  color: var(--color-text);
+  cursor: pointer;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.slideshow-controls button:hover {
+  background: var(--color-hover);
+}
+
+.slideshow-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+/* 1.5rem tap target around a 0.75rem dot */
+.slideshow-controls .slideshow-dot {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+}
+
+.slideshow-dot::after {
+  position: absolute;
+  inset: 0.375rem;
+  content: "";
+  border: 1px solid var(--color-accent);
+  border-radius: 50%;
+}
+
+.slideshow-dot[aria-current="true"]::after {
+  background: var(--color-accent);
+}
+
+@media (min-width: 64rem) {
+  .spotlight .art-piece img {
+    max-height: 60vh;
+    max-height: 60dvh;
+  }
+
+  .spotlight {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+    column-gap: 2rem;
+    max-width: 72rem;
+    padding: 2rem 3rem;
+  }
+
+  .spotlight .artwork-info {
+    max-width: none;
+    text-align: left;
+  }
+
+  .slideshow-controls {
+    grid-column: 1;
+  }
+
+  .slideshow-dots {
+    width: auto;
+  }
+}
+
+@keyframes slide-zoom {
+  from {
+    opacity: 0;
+    transform: scale(1);
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes info-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Reduced motion: no zoom or slide, only a short fade */
+@media (prefers-reduced-motion: reduce) {
+  .spotlight .art-piece img,
+  .artwork-info {
+    animation: fade-in 0.3s ease-out both;
+  }
+}
+
+.reduced-motion .art-piece img,
+.reduced-motion .artwork-info {
+  animation: fade-in 0.3s ease-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
