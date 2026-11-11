@@ -8,10 +8,11 @@ export default function BackButton() {
   const hasPreviousPage = location.key !== "default";
 
   function handleClick() {
+    // navigate may return a promise, and nothing here needs to wait for it
     if (hasPreviousPage) {
-      navigate(-1);
+      void navigate(-1);
     } else {
-      navigate("/art-pieces");
+      void navigate("/art-pieces");
     }
   }
 
