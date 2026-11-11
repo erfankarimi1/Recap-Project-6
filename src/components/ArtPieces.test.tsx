@@ -93,3 +93,9 @@ test("calls onToggleFavorite with the slug of the clicked piece", async () => {
   expect(onToggleFavorite).toHaveBeenCalledTimes(1);
   expect(onToggleFavorite).toHaveBeenCalledWith("b");
 });
+
+test("lays the art pieces out in a responsive grid", () => {
+  renderArtPieces(pieces);
+
+  expect(screen.getByRole("list")).toHaveClass("art-list");
+});
