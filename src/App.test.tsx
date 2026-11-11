@@ -398,3 +398,94 @@ test("starts without favorites when nothing is saved", async () => {
     screen.getByRole("button", { name: "Favorite Piece B", pressed: false })
   ).toBeInTheDocument();
 });
+
+test("sets data-theme on the html element when the theme button is clicked", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  renderApp();
+  await screen.findByRole("button", { name: /Switch to/ });
+
+  const root = document.documentElement;
+  const start = root.dataset.theme;
+  expect(["light", "dark"]).toContain(start);
+  const other = start === "dark" ? "light" : "dark";
+
+  await user.click(screen.getByRole("button", { name: /Switch to/ }));
+  expect(root.dataset.theme).toBe(other);
+
+  await user.click(screen.getByRole("button", { name: /Switch to/ }));
+  expect(root.dataset.theme).toBe(start);
+});
+
+test("starts with the operating system setting", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const mockOsTheme = (prefersDark: boolean) =>
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn((query: string) => ({
+        matches: query === "(prefers-color-scheme: dark)" ? prefersDark : false,
+      }))
+    );
+
+  mockOsTheme(true);
+  const dark = render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+  await screen.findByRole("button", { name: /Switch to/ });
+  expect(document.documentElement.dataset.theme).toBe("dark");
+  dark.unmount();
+
+  mockOsTheme(false);
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+  await screen.findByRole("button", { name: /Switch to/ });
+  expect(document.documentElement.dataset.theme).toBe("light");
+});
+
+test("keeps the chosen theme after a reload", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => pieces })
+  );
+  const user = userEvent.setup();
+  const firstVisit = render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+  await screen.findByRole("button", { name: /Switch to/ });
+  const start = document.documentElement.dataset.theme;
+  const other = start === "dark" ? "light" : "dark";
+  await user.click(screen.getByRole("button", { name: /Switch to/ }));
+  expect(document.documentElement.dataset.theme).toBe(other);
+  firstVisit.unmount();
+  document.documentElement.removeAttribute("data-theme");
+
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={["/art-pieces"]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+  await screen.findByRole("button", { name: /Switch to/ });
+
+  expect(document.documentElement.dataset.theme).toBe(other);
+});

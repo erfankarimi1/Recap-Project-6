@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import useSWR from "swr";
 import { Route, Routes } from "react-router";
 
@@ -8,7 +8,8 @@ import Navigation from "./components/Navigation";
 import Spotlight from "./components/Spotlight";
 import { ART_API_URL, fetcher } from "./fetcher";
 import { loadArtPiecesInfo, saveArtPiecesInfo } from "./storage";
-import type { ArtPieceInfo } from "./types";
+import { getInitialTheme, saveTheme } from "./theme";
+import type { ArtPieceInfo, Theme } from "./types";
 import "./styles.css";
 
 export default function App() {
@@ -19,6 +20,21 @@ export default function App() {
   useEffect(() => {
     saveArtPiecesInfo(artPiecesInfo);
   }, [artPiecesInfo]);
+
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+  // Before the first paint, so there is no flash of the other theme
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  // Only a click saves the theme: the theme chosen by the operating system
+  // is not a choice of the user and must not be frozen
+  function handleToggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    saveTheme(next);
+  }
 
   function isFavorite(slug: string) {
     return artPiecesInfo.some((info) => info.slug === slug && info.isFavorite);
@@ -104,7 +120,7 @@ export default function App() {
           <Route path="*" element={<p>Page not found</p>} />
         </Routes>
       </main>
-      <Navigation />
+      <Navigation theme={theme} onToggleTheme={handleToggleTheme} />
     </>
   );
 }
