@@ -67,3 +67,15 @@ test("navigates to the favorites page", async () => {
 
   expect(screen.getByText("Favorites page")).toBeInTheDocument();
 });
+
+test("highlights the Favorites link on the favorites page", () => {
+  renderNavigation("/favorites");
+
+  expect(screen.getByRole("link", { name: "Favorites" })).toHaveClass("active");
+  expect(screen.getByRole("link", { name: "Gallery" })).not.toHaveClass(
+    "active"
+  );
+  expect(screen.getByRole("link", { name: "Spotlight" })).not.toHaveClass(
+    "active"
+  );
+});
