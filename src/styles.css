@@ -72,10 +72,114 @@ main {
     calc(var(--nav-height) + 1rem);
 }
 
-/* The slideshow uses the whole viewport */
+/* The slideshow uses the whole viewport. The page is a column, so the
+   slideshow takes the space that is left under the header. */
 main:has(.spotlight) {
+  display: flex;
+  flex-direction: column;
   max-width: none;
+  min-height: 100vh;
+  min-height: 100dvh;
   padding: 0 0 var(--nav-height);
+}
+
+main:has(.spotlight) .spotlight {
+  flex: 1;
+  min-height: 0;
+}
+
+/* The header: the website name, and the search and filters */
+.site-header {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* On the Spotlight page the header starts at the top of the screen, so it
+   clears the corner buttons itself */
+main:has(.spotlight) .site-header {
+  margin-bottom: 0;
+  padding: calc(4.5rem + env(safe-area-inset-top)) 1rem 1rem;
+}
+
+.site-header h1 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 6vw, 2.25rem);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  justify-content: center;
+}
+
+.filter-field {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.filter-field label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.filter-field input,
+.filter-field select {
+  max-width: 100%;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+}
+
+/* About 50 swatches: the group scrolls, so the header stays small */
+.filter-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  width: 100%;
+  max-height: 5.5rem;
+  padding: 0.25rem;
+  overflow-y: auto;
+}
+
+.filter-swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  cursor: pointer;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+}
+
+.filter-swatch[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.filter-clear {
+  padding: 0.5rem 1rem;
+  font: inherit;
+  color: var(--color-text);
+  cursor: pointer;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.filter-clear:hover {
+  background: var(--color-hover);
 }
 
 nav {
