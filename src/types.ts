@@ -21,3 +21,12 @@ export type ArtPieceInfo = {
 };
 
 export type Theme = "light" | "dark";
+
+// An empty string means "no filter" for that field
+export type ArtFilters = {
+  query: string;
+  artist: string;
+  year: string;
+  type: string;
+  color: string;
+};
