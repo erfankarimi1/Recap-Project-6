@@ -213,3 +213,24 @@ test("keeps the page content below the corner buttons", () => {
   // The buttons are 2.75rem high and 0.75rem from the top, plus a gap
   expect(ruleBody("main")).toContain("calc(4.5rem + env(safe-area-inset-top))");
 });
+
+test("header and filter bar take their colors from the tokens", () => {
+  const selectors = [
+    ".site-header",
+    ".site-header h1",
+    ".filter-field label",
+    ".filter-field select",
+    ".filter-swatch",
+    ".filter-clear",
+  ];
+
+  for (const selector of selectors) {
+    expect(ruleBody(selector), selector).toContain("var(--color-");
+  }
+});
+
+test("wraps the filter bar on small screens", () => {
+  expect(ruleBody(".filter-bar")).toContain("flex-wrap: wrap");
+  // A field may become narrower than its content instead of overflowing
+  expect(ruleBody(".filter-field")).toContain("min-width: 0");
+});
