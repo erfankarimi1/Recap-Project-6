@@ -282,3 +282,19 @@ test("shows title, artist, year and genre", () => {
   expect(screen.getByText("1910")).toBeInTheDocument();
   expect(screen.getByText("Genre B")).toBeInTheDocument();
 });
+
+test("starts over the new pieces when the filter changes", () => {
+  // 0.99 starts the slideshow on the last piece
+  vi.spyOn(Math, "random").mockReturnValue(0.99);
+  const { rerender } = render(
+    <Spotlight key="a,b" pieces={pieces} {...favoriteProps} />
+  );
+  expect(screen.getByRole("img", { name: "Piece B" })).toBeInTheDocument();
+
+  // The filter leaves only Piece A, and App gives the slideshow a new key
+  rerender(<Spotlight key="a" pieces={[pieces[0]]} {...favoriteProps} />);
+
+  expect(screen.getByRole("img", { name: "Piece A" })).toBeInTheDocument();
+  expect(screen.getAllByRole("button", { name: /^Show / })).toHaveLength(1);
+  expect(screen.queryByText("No art pieces to show.")).not.toBeInTheDocument();
+});

@@ -54,7 +54,10 @@ test("shows a loading state, then all art pieces with image, title and artist", 
     "https://example.com/a.jpg"
   );
   expect(screen.getByText("Piece B")).toBeInTheDocument();
-  expect(screen.getByText("Artist B")).toBeInTheDocument();
+  // The header's artist filter lists the artist too, so look in the art list
+  expect(
+    within(screen.getByRole("list")).getByText("Artist B")
+  ).toBeInTheDocument();
 });
 
 test("shows an error state when the request fails", async () => {
@@ -79,9 +82,13 @@ test("shows the spotlight on the route /", async () => {
     </SWRConfig>
   );
 
-  expect(await screen.findByText("Artist A")).toBeInTheDocument();
+  // The header's artist filter lists the artists too, so look in the slideshow
+  const slideshow = await screen.findByRole("region", {
+    name: "Spotlight slideshow",
+  });
+  expect(within(slideshow).getByText("Artist A")).toBeInTheDocument();
   expect(screen.getByRole("img", { name: "Piece A" })).toBeInTheDocument();
-  expect(screen.queryByText("Artist B")).not.toBeInTheDocument();
+  expect(within(slideshow).queryByText("Artist B")).not.toBeInTheDocument();
   vi.restoreAllMocks();
 });
 
@@ -257,7 +264,10 @@ test("shows image, title and artist of each favorite", async () => {
     "https://example.com/b.jpg"
   );
   expect(screen.getByText("Piece B")).toBeInTheDocument();
-  expect(screen.getByText("Artist B")).toBeInTheDocument();
+  // The header's artist filter lists the artist too, so look in the art list
+  expect(
+    within(screen.getByRole("list")).getByText("Artist B")
+  ).toBeInTheDocument();
 });
 
 test("shows an active favorite button on each favorite", async () => {
@@ -570,4 +580,252 @@ test("shows the theme, back and go-to-top buttons on every page", async () => {
   } finally {
     Object.defineProperty(window, "scrollY", { configurable: true, value: 0 });
   }
+});
+
+// Art pieces for the header and the filters
+const catalog = [
+  {
+    slug: "sunday",
+    artist: "Georges Seurat",
+    name: "A Sunday on La Grande Jatte",
+    imageSource: "https://example.com/sunday.jpg",
+    year: "1884",
+    genre: "Pointillist Painting",
+    colors: ["#111111", "#222222"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
+  },
+  {
+    slug: "wheat",
+    artist: "Vincent van Gogh",
+    name: "Wheat Field with Cypresses",
+    imageSource: "https://example.com/wheat.jpg",
+    year: "1889",
+    genre: "Landscape Painting",
+    colors: ["#333333"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
+  },
+  {
+    slug: "harvesters",
+    artist: "Pieter Bruegel the Elder",
+    name: "The Harvesters",
+    imageSource: "https://example.com/harvesters.jpg",
+    year: "1565",
+    genre: "Landscape Painting",
+    colors: ["#444444"],
+    dimensions: { height: 100, width: 200, type: "jpg" },
+  },
+];
+
+function renderCatalogAt(path: string) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => catalog })
+  );
+  return render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+      </MemoryRouter>
+    </SWRConfig>
+  );
+}
+
+test("shows the ArtGallery header on Spotlight, Gallery and Favorites only", async () => {
+  for (const path of ["/", "/art-pieces", "/favorites"]) {
+    const page = renderCatalogAt(path);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "ArtGallery" })
+    ).toBeInTheDocument();
+    page.unmount();
+  }
+
+  for (const path of [
+    "/art-pieces/sunday",
+    "/art-pieces/sunday/room",
+    "/nowhere",
+  ]) {
+    const page = renderCatalogAt(path);
+    await screen.findByRole("navigation", { name: "Main navigation" });
+    expect(
+      screen.queryByRole("heading", { level: 1, name: "ArtGallery" })
+    ).not.toBeInTheDocument();
+    page.unmount();
+  }
+});
+
+test("filters the Gallery", async () => {
+  const user = userEvent.setup();
+  renderCatalogAt("/art-pieces");
+  expect(
+    within(await screen.findByRole("list")).getAllByRole("link")
+  ).toHaveLength(3);
+
+  await user.type(screen.getByRole("searchbox", { name: "Search" }), "Sunday");
+
+  const links = within(screen.getByRole("list")).getAllByRole("link");
+  expect(links).toHaveLength(1);
+  expect(links[0]).toHaveAccessibleName(/A Sunday on La Grande Jatte/);
+});
+
+test("shows No art pieces match your search.", async () => {
+  const user = userEvent.setup();
+  renderCatalogAt("/art-pieces");
+  await screen.findByRole("list");
+  expect(
+    screen.queryByText("No art pieces match your search.")
+  ).not.toBeInTheDocument();
+
+  await user.type(screen.getByRole("searchbox", { name: "Search" }), "zzzzzz");
+
+  expect(
+    screen.getByText("No art pieces match your search.")
+  ).toBeInTheDocument();
+  expect(screen.queryByRole("list")).not.toBeInTheDocument();
+});
+
+test("shows all pieces again after Clear filters", async () => {
+  const user = userEvent.setup();
+  renderCatalogAt("/art-pieces");
+  await screen.findByRole("list");
+
+  await user.type(screen.getByRole("searchbox", { name: "Search" }), "land");
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Artist" }),
+    "Vincent van Gogh"
+  );
+  await user.click(screen.getByRole("button", { name: "#333333" }));
+  expect(within(screen.getByRole("list")).getAllByRole("link")).toHaveLength(1);
+
+  await user.click(screen.getByRole("button", { name: "Clear filters" }));
+
+  expect(within(screen.getByRole("list")).getAllByRole("link")).toHaveLength(3);
+  expect(screen.getByRole("searchbox", { name: "Search" })).toHaveValue("");
+  expect(screen.getByRole("combobox", { name: "Artist" })).toHaveValue("");
+  expect(screen.getByRole("button", { name: "#333333" })).toHaveAttribute(
+    "aria-pressed",
+    "false"
+  );
+});
+
+test("filters the Favorites page", async () => {
+  const user = userEvent.setup();
+  const page = renderCatalogAt("/art-pieces");
+  await user.click(
+    await screen.findByRole("button", {
+      name: "Favorite A Sunday on La Grande Jatte",
+    })
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Favorite Wheat Field with Cypresses" })
+  );
+  await user.click(screen.getByRole("link", { name: "Favorites" }));
+  expect(within(screen.getByRole("list")).getAllByRole("link")).toHaveLength(2);
+
+  // Only the favorites that match the search stay
+  const search = screen.getByRole("searchbox", { name: "Search" });
+  await user.type(search, "sunday");
+  const links = within(screen.getByRole("list")).getAllByRole("link");
+  expect(links).toHaveLength(1);
+  expect(links[0]).toHaveAccessibleName(/A Sunday on La Grande Jatte/);
+
+  // The Harvesters is not a favorite, so it never shows up here
+  await user.clear(search);
+  await user.type(search, "harvesters");
+  expect(
+    screen.getByText("No art pieces match your search.")
+  ).toBeInTheDocument();
+  page.unmount();
+
+  // Without any favorites the output is the same as before: no message
+  localStorage.clear();
+  renderCatalogAt("/favorites");
+  await user.type(
+    await screen.findByRole("searchbox", { name: "Search" }),
+    "zzzzzz"
+  );
+  expect(
+    screen.queryByText("No art pieces match your search.")
+  ).not.toBeInTheDocument();
+  expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+});
+
+test("filters the Spotlight", async () => {
+  // 0.99 starts the slideshow on the last piece of the list
+  vi.spyOn(Math, "random").mockReturnValue(0.99);
+  try {
+    const user = userEvent.setup();
+    renderCatalogAt("/");
+    await screen.findByRole("region", { name: "Spotlight slideshow" });
+    const slideshow = () =>
+      screen.getByRole("region", { name: "Spotlight slideshow" });
+    const dots = () =>
+      within(slideshow()).getAllByRole("button", { name: /^Show / });
+
+    expect(
+      within(slideshow()).getByRole("img", { name: "The Harvesters" })
+    ).toBeInTheDocument();
+    expect(dots()).toHaveLength(3);
+
+    // One match: the slideshow starts again, on the piece that matches
+    const search = screen.getByRole("searchbox", { name: "Search" });
+    await user.type(search, "wheat");
+    expect(
+      within(slideshow()).getByRole("img", {
+        name: "Wheat Field with Cypresses",
+      })
+    ).toBeInTheDocument();
+    expect(dots()).toHaveLength(1);
+
+    // Two matches: Next only cycles through them
+    await user.clear(search);
+    await user.type(search, "landscape");
+    expect(dots()).toHaveLength(2);
+    const seen = new Set<string>();
+    for (let step = 0; step < 4; step++) {
+      seen.add(within(slideshow()).getByRole("img").getAttribute("alt") ?? "");
+      await user.click(
+        within(slideshow()).getByRole("button", { name: "Next" })
+      );
+    }
+    expect([...seen].sort()).toEqual([
+      "The Harvesters",
+      "Wheat Field with Cypresses",
+    ]);
+
+    // No match: the message takes the place of the slideshow
+    await user.clear(search);
+    await user.type(search, "zzzzzz");
+    expect(
+      screen.getByText("No art pieces match your search.")
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Spotlight slideshow" })
+    ).not.toBeInTheDocument();
+  } finally {
+    vi.restoreAllMocks();
+  }
+});
+
+test("keeps the search when moving to another page", async () => {
+  const user = userEvent.setup();
+  renderCatalogAt("/art-pieces");
+  await user.type(
+    await screen.findByRole("searchbox", { name: "Search" }),
+    "landscape"
+  );
+
+  await user.click(screen.getByRole("link", { name: "Favorites" }));
+  expect(screen.getByRole("searchbox", { name: "Search" })).toHaveValue(
+    "landscape"
+  );
+
+  await user.click(screen.getByRole("link", { name: "Spotlight" }));
+  expect(screen.getByRole("searchbox", { name: "Search" })).toHaveValue(
+    "landscape"
+  );
+  // The filter still applies there: two pieces are landscapes
+  const slideshow = screen.getByRole("region", { name: "Spotlight slideshow" });
+  expect(
+    within(slideshow).getAllByRole("button", { name: /^Show / })
+  ).toHaveLength(2);
 });
